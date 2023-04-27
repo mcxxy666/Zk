@@ -1,0 +1,49 @@
+SPICA2: type-based protocol verifier for SPI-calculus with Correspondence Assertions
+
+Copyright 2011 by Naoki Kobayashi, Yunde Sun, and Daisuke Kikukchi
+
+This is a type based protocol verifier for checking authenticity in security protocols,
+based on:
+
+   Daisuke Kikuchi and Naoki Kobayashi, 
+   Type-Based Automated Verification of Authenticity in Cryptographic Protocols
+   ESOP 2009.
+
+   Morten Dahl, Hans Huttel, Naoki Kobayashi and Yunde Sun
+   Type-Based Automated Verification of Authenticity in Asymmetric Cryptographic Protocols
+   2011
+
+1. How to install
+
+    see INSTALL
+
+2. How to use
+
+  The following is a sample usage ("%" is a Unix prompt) in cygwin.
+
+    % spica (filename)
+
+   Here, (filename) stands for the location of sources written in the syntax of SPICA.
+
+   If the verification succeeds, a type-annotated version of the process is output.
+   Otherwise, it just reports a failure ("The process is ill-typed.").
+
+
+3. Syntax of SPICA2
+
+  (Variables)
+    x, y, z, ...
+
+  (messages)
+    M ::= x | () | (M1,M2) | inl(M) | inr(M) | {M}K | {{M}}K | (M)
+
+  (processes)
+    P ::= O | M!N | M?y.P | P1|P2 | *P | (new x)P | check x is N.P 
+        | decrypt M is {x}K in P
+        | decrypt M is {{x}}K in P
+        | case M is inl(x).P is inr(y).Q 
+        | split M is (x,y) in P | begin M.P | end M | (P)
+        | match M is (x,y) in P
+        | M!!N | M??x.P | (news x)P  /** primitives for communication on private channels **/
+         
+ 

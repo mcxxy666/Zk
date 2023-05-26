@@ -544,5 +544,21 @@ let rec stype_inf (p: unit procexp) =
   let env'' = env_stype env pub_c' in
     (p'''',env'')
 
-  
+
+
+let rec type_check p env expected_type = match p with
+    Zero -> expected_type = Zero  
+  | Out(m,n) ->  
+      let ty_m = type_check m env TName in
+      let ty_n = type_check n env TName in
+      expected_type = Out(m,n) && ty_m && ty_n
+  | OutS(m,n) -> 
+      let ty_m = type_check m env TName in
+      let ty_n = type_check n env (TChan(TName)) in
+      expected_type = OutS(m,n) && ty_m && ty_n
+  | In(m,x,_,pr) -> 
+      let ty_m = type_check m env TName in
+      let ty_x = type_check x env TVar(x) in
+      let ty_pr = type_check pr env expected_type in
+      ty_m && ty_x && ty_pr
 

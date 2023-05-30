@@ -546,19 +546,23 @@ let rec stype_inf (p: unit procexp) =
 
 
 
-let rec type_check p env expected_type = match p with
-    Zero -> expected_type = Zero  
-  | Out(m,n) ->  
-      let ty_m = type_check m env TName in
-      let ty_n = type_check n env TName in
-      expected_type = Out(m,n) && ty_m && ty_n
-  | OutS(m,n) -> 
-      let ty_m = type_check m env TName in
-      let ty_n = type_check n env (TChan(TName)) in
-      expected_type = OutS(m,n) && ty_m && ty_n
-  | In(m,x,_,pr) -> 
-      let ty_m = type_check m env TName in
-      let ty_x = type_check x env TVar(x) in
-      let ty_pr = type_check pr env expected_type in
-      ty_m && ty_x && ty_pr
-
+let check_constraints_for_process (p: 'a procexp) (expected: constraint list) (env: env) : bool =
+  let _, actual_constraints = tinf p env in
+  match p with
+  | Out(m,n) ->
+    List.length expected = List.length actual_constraints &&
+    List.for_all (fun e -> List.mem e actual_constraints) expected
+  | In(m, x, a, p') ->
+    List.length expected = List.length actual_constraints &&
+    List.for_all (fun e -> List.mem e actual_constraints) expected
+  | _ -> 
+    false
+let constraints_expected = [(ty_m, TName)] in
+let env = 'a in
+let process = Out(m, n) in
+let result = check_constraints_for_process process constraints_expected env in
+if result then 
+  print_endline "correct"
+else
+  print_endline "not correct"
+    

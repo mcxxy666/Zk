@@ -545,24 +545,3 @@ let rec stype_inf (p: unit procexp) =
     (p'''',env'')
 
 
-
-let check_constraints_for_process (p: 'a procexp) (expected: constraint list) (env: env) : bool =
-  let _, actual_constraints = tinf p env in
-  match p with
-  | Out(m,n) ->
-    List.length expected = List.length actual_constraints &&
-    List.for_all (fun e -> List.mem e actual_constraints) expected
-  | In(m, x, a, p') ->
-    List.length expected = List.length actual_constraints &&
-    List.for_all (fun e -> List.mem e actual_constraints) expected
-  | _ -> 
-    false
-let constraints_expected = [(ty_m, TName)] in
-let env = 'a in
-let process = Out(m, n) in
-let result = check_constraints_for_process process constraints_expected env in
-if result then 
-  print_endline "correct"
-else
-  print_endline "not correct"
-    

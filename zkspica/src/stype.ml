@@ -186,6 +186,7 @@ let rec tinf p env = match p with
   | Nu(x,_,pr) -> 
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
+      let _ = (Pprint.print_env env) in
       let env' = env_extend (ENname(x)) ty_x env in
       let (pr',sc_p,pub_t) = tinf pr env' in
 	(Nu(x,ty_x,pr'),sc_p,pub_t)
@@ -199,6 +200,7 @@ let rec tinf p env = match p with
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
       let env' = env_extend (ENname(x)) (TSKey(ty_x)) env in
+      let _ = (Pprint.print_env env') in
       let (pr',sc_p,pub_t) = tinf pr env' in
 	(NuSym(x,TSKey(ty_x),pr'),sc_p,pub_t)
   | NuAsym(x,_,y,_,pr) -> 
@@ -535,6 +537,8 @@ let rec stype_inf (p: unit procexp) =
   let fv = fv_proc p in
   let env = List.fold_left (fun env -> fun x -> env_extend2 x  env) [] fv in
   let (p',c,pub_t) = tinf p env in
+  let _ = (Pprint.print_constraint c) in
+  (* let _ = (Pprint.ppp_proc p') in   *)
   let s = unif c in
   let p'' = tsubst_for_proc s p' in 
   let (p'',teq_c,pub_c,env_c) = tinf2 p'' env in
@@ -543,5 +547,3 @@ let rec stype_inf (p: unit procexp) =
   let p'''' = map_for_t specify_type p''' in
   let env'' = env_stype env pub_c' in
     (p'''',env'')
-
-

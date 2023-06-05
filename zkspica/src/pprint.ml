@@ -380,6 +380,34 @@ else
       print_string "*(";
       print_proc prec_begin print_t pr;
       print_string ")"
-   
 
 let pp_proc print_t p = pprint_proc "" 0 7 print_t p
+
+
+let ppp_proc p = pp_proc (Some print_stype) p
+
+let print_env (env : (ex_name * stype) list) = 
+  let rec print_env' (env : (ex_name * stype) list) = 
+    match env with
+  | [] -> ""
+  | (x,t)::tl -> 
+    (print_exname x)^":"^(print_stype t)^"\n"^(print_env' tl)
+  in 
+  (print_string "Environment:\n";
+  print_string (print_env' env);
+  print_string "End of Environment:\n")
+  
+
+let print_constraint (env : (stype * stype) list) =  
+  let rec print_env' (env : (stype * stype) list) = 
+    match env with
+  | [] -> ""
+  | (x,t)::tl -> 
+    (print_stype x)^":"^(print_stype t)^"\n"^(print_env' tl) 
+  in 
+  (print_string "Constraint :\n";
+  print_string (print_env' env);
+  print_string "End of Constraint:\n")
+
+
+

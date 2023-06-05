@@ -6,6 +6,8 @@ let infer p =
   try 
   let _ = (print_string ("0: "^(string_of_float(Sys.time()))^"\n"); flush stdout) in
     let (p0, env) = Stype.stype_inf p in
+    let _ = (Pprint.ppp_proc p0) in 
+    let _ = (Pprint.print_env env) in
   let _ = (print_string ("1: "^(string_of_float(Sys.time()))^"\n"); flush stdout) in
     let (ec, p1) = Einf.einf env p0 in
   let _ = (print_string ("2: "^(string_of_float(Sys.time()))^"\n"); flush stdout) in

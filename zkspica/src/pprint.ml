@@ -409,5 +409,43 @@ let print_constraint (env : (stype * stype) list) =
   print_string (print_env' env);
   print_string "End of Constraint:\n")
 
+  let print_constraint_name n m = 
+    print_string ("[" ^ n ^"]");
+    print_string " ";
+    print_constraint m 
+    
+
+  let print_env_name n m = 
+      print_string ("[" ^ n ^"]");
+      print_string " ";
+      print_env m 
+
+  
+
+  let print_pp (pp:pp) = match pp with
+  | Pub -> "Pub"
+  | Pr -> "Pri"
+
+  let print_pp (pp:pp) = match pp with
+  | Pub -> "Pub"
+  | Pr -> "Pri"
+
+let print_stype_pp (pp:stype * pp) =
+  let (t,pp) = pp in
+  (print_stype t)^"["^(print_pp pp)^"]"
+
+let print_pp_list (pp_list: (stype * pp) list) =
+  let rec print_pp_list' (pp_list: (stype * pp) list) =
+    match pp_list with
+    | [] -> ""
+    | hd::tl -> (print_stype_pp hd)^"\n"^(print_pp_list' tl)
+  in
+  (print_string "PP List:\n";
+  print_string (print_pp_list' pp_list);
+  print_string "End of PP List\n")
 
 
+  let print_pp_list_name n m = 
+    print_string ("[" ^ n ^"]");
+    print_string " ";
+    print_pp_list m  

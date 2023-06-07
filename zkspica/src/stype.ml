@@ -146,6 +146,7 @@ let rec tinfV m env = match m with
   | EncSym(m',k) -> 
       let (ty_m,sc_m) = tinfV m' env in
       let (ty_k,sc_k) = tinfV k env in
+      let _ = (Pprint.print_constraint_name "enc" ([(ty_k,TSKey(ty_m))] @ sc_m @ sc_k )) in
 	(TName(Pub),[(ty_k,TSKey(ty_m))] @ sc_m @ sc_k)
   | EncAsym(m',k) -> 
       let (ty_m,sc_m) = tinfV m' env in
@@ -160,6 +161,8 @@ let rec tinf p env = match p with
   | Out(m,n) -> 
       let (ty_m,sc_m) = tinfV m env in
       let (ty_n,sc_n) = tinfV n env in
+      let _ = (Pprint.print_constraint_name "out" (sc_m @ sc_n@[(ty_m,TName(Pub))] )) in
+      let _ = (Pprint.print_pp_list ([(ty_m,Pub);(ty_n,Pub)])) in
 	(Out(m,n),sc_m @ sc_n@[(ty_m,TName(Pub))],[(ty_m,Pub);(ty_n,Pub)])
   | OutS(m,n) -> 
       let (ty_m,sc_m) = tinfV m env in
@@ -170,7 +173,9 @@ let rec tinf p env = match p with
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
       let env' = env_extend (ENname(x)) ty_x env in
+      let _ = (Pprint.print_env_name "in" env') in
       let (pr',sc_p,pub_t) = tinf pr env' in
+      let _ = (Pprint.print_constraint_name "in" (sc_m @ sc_p @[(ty_m,TName(Pub))] )) in
 	(In(m,x,ty_x,pr'),sc_m @ sc_p @[(ty_m,TName(Pub))],(Utilities.merge_and_unify compare [(ty_x,Pub);(ty_m,Pub)] pub_t))
  | InS(m,x,_,pr) -> 
       let (ty_m,sc_m) = tinfV m env in
@@ -182,13 +187,19 @@ let rec tinf p env = match p with
   | Par(pr1,pr2) -> 
       let (pr1',sc1,pub_t1) = tinf pr1 env in
       let (pr2',sc2,pub_t2) = tinf pr2 env in
+      let _ = (Pprint.print_constraint_name "par" (sc1 @ sc2 )) in
+      let _ = (Pprint.print_pp_list_name "par" (Utilities.merge_and_unify compare pub_t1 pub_t2)) in
+      let _ = (Pprint.print_pp_list_name "par111"  pub_t1 ) in
+      let _ = (Pprint.print_pp_list_name "par222"  pub_t2 ) in
 	(Par(pr1',pr2'),sc1 @ sc2,(Utilities.merge_and_unify compare pub_t1 pub_t2))
   | Nu(x,_,pr) -> 
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
-      let _ = (Pprint.print_env env) in
+      let _ = (Pprint.print_env_name "origin" env) in
       let env' = env_extend (ENname(x)) ty_x env in
+      let _ = (Pprint.print_env_name "new" env') in
       let (pr',sc_p,pub_t) = tinf pr env' in
+      let _ = (Pprint.print_constraint_name "new" (sc_p )) in
 	(Nu(x,ty_x,pr'),sc_p,pub_t)
   | NuS(x,_,pr) -> 
       let xn = fresh_tyvar () in
@@ -200,7 +211,7 @@ let rec tinf p env = match p with
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
       let env' = env_extend (ENname(x)) (TSKey(ty_x)) env in
-      let _ = (Pprint.print_env env') in
+      let _ = (Pprint.print_env_name "nusym" env') in
       let (pr',sc_p,pub_t) = tinf pr env' in
 	(NuSym(x,TSKey(ty_x),pr'),sc_p,pub_t)
   | NuAsym(x,_,y,_,pr) -> 
@@ -216,6 +227,7 @@ let rec tinf p env = match p with
       let (ty_x,sc_n) = tinfV (Name(ENname(x))) env in
       let (ty_y,sc_n') = tinfV (Name(ENname(y))) env in
       let (pr',sc_p,pub_t) = tinf pr env in
+      let _ = (Pprint.print_constraint_name "check" (sc_n@sc_n'@sc_p@[(ty_x,ty_y);(ty_y,ty_x)])) in
 	(Check(x,y,pr'),sc_n@sc_n'@sc_p@[(ty_x,ty_y);(ty_y,ty_x)],pub_t)  
   | DecSym(m,x,_,k,pr) -> 
       let (ty_m,sc_m) = tinfV m env in
@@ -223,7 +235,9 @@ let rec tinf p env = match p with
       let xn = fresh_tyvar () in
       let ty_x = TVar(xn) in
       let env' = env_extend (ENname(x)) ty_x env in
+      let _ = (Pprint.print_env_name "dec" env') in
       let (pr',sc_p,pub_t) = tinf pr env' in
+      let _ = (Pprint.print_constraint_name "dec" (sc_m @ sc_k @ sc_p @[(ty_m,TName(Pub));(ty_k,TSKey(ty_x))])) in
 	(DecSym(m,x,ty_x,k,pr'),sc_m @ sc_k @ sc_p @[(ty_m,TName(Pub));(ty_k,TSKey(ty_x))],(Utilities.merge_and_unify compare [(ty_m,Pub)] pub_t))
   | DecAsym(m,x,_,k,pr) -> 
       let (ty_m,sc_m) = tinfV m env in
@@ -267,6 +281,7 @@ let rec tinf p env = match p with
 	(Begin(m,pr'),sc_m @ sc_p,pub_t)
   | End(m) -> 
       let (ty_m,sc_m) = tinfV m env in
+      let _ = (Pprint.print_constraint_name "end" sc_m) in
 	(End(m),sc_m,[])
 
   | Copy(pr) ->
@@ -535,14 +550,20 @@ let rec pub_for_c2 f l pub_c =
 (*** stype_inf: unit procexp -> stype procexp * stype env ***)
 let rec stype_inf (p: unit procexp) = 
   let fv = fv_proc p in
+
   let env = List.fold_left (fun env -> fun x -> env_extend2 x  env) [] fv in
+  let _ = (Pprint.print_env env) in
   let (p',c,pub_t) = tinf p env in
-  let _ = (Pprint.print_constraint c) in
-  (* let _ = (Pprint.ppp_proc p') in   *)
+  let _ = (Pprint.print_constraint_name "final" c) in
+  let _ = (Pprint.ppp_proc p') in  
+  let _ = (Pprint.print_pp_list pub_t) in
   let s = unif c in
+  let _ = (Pprint.print_constraint_name "uni" s) in
   let p'' = tsubst_for_proc s p' in 
   let (p'',teq_c,pub_c,env_c) = tinf2 p'' env in
+  let _ = (Pprint.ppp_proc p'') in
   let pub_c' =  (pub_for_c teq_c pub_c)@pub_t    in
+  let _ = (Pprint.print_constraint_name "teq_c" teq_c) in
   let p''' = map_for_t (specify_type_for_pub pub_c') p'' in
   let p'''' = map_for_t specify_type p''' in
   let env'' = env_stype env pub_c' in
